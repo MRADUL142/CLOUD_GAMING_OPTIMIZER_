@@ -10,3 +10,15 @@
 2026-02-18 09:34:55,573 - __main__ - INFO - Environment: development
 2026-02-18 09:34:55,589 - werkzeug - WARNING -  * Debugger is active!
 2026-02-18 09:34:55,606 - werkzeug - INFO -  * Debugger PIN: 103-015-008
+2026-02-18 09:43:25,049 - __main__ - INFO - Starting Cloud Gaming Optimizer Web Dashboard on 0.0.0.0:5000
+2026-02-18 09:43:25,050 - __main__ - INFO - Environment: development
+2026-02-18 09:43:25,066 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.1.79:5000
+2026-02-18 09:43:25,066 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-02-18 09:43:25,067 - werkzeug - INFO -  * Restarting with stat
+2026-02-18 09:43:25,231 - __main__ - INFO - Starting Cloud Gaming Optimizer Web Dashboard on 0.0.0.0:5000
+2026-02-18 09:43:25,232 - __main__ - INFO - Environment: development
+2026-02-18 09:43:25,245 - werkzeug - WARNING -  * Debugger is active!
+2026-02-18 09:43:25,246 - werkzeug - INFO -  * Debugger PIN: 103-015-008
