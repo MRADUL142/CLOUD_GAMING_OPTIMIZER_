@@ -1,0 +1,7 @@
+2026-02-18 10:14:12,667 - data_collection.network_metrics - INFO - NetworkMetricsCollector initialized
+2026-02-18 10:14:12,667 - optimization_engine.optimization_rules - INFO - OptimizationRules initialized
+2026-02-18 10:14:12,667 - optimization_engine.optimizer - INFO - GamingOptimizer initialized
+2026-02-18 10:14:12,667 - monitoring.performance_monitor - INFO - PerformanceMonitor initialized
+2026-02-18 10:14:12,667 - monitoring.alert_system - INFO - AlertSystem initialized
+2026-02-18 10:14:12,668 - web_app - INFO - Components initialized successfully
+2026-02-18 10:14:12,668 - data_collection.network_metrics - WARNING - Could not measure latency: [Errno 2] No such file or directory: 'ping'
