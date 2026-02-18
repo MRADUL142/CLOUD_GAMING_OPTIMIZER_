@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Gaming Performance Optimizer</title>
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Cloud Gaming Optimizer - Dashboard Styles */
+
+        /* CSS Variables */
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-bg: #0f172a;
+            --dark-card: #1e293b;
+            --dark-border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --network-color: #06b6d4;
+            --system-color: #8b5cf6;
+            --gpu-color: #f97316;
+            --ram-color: #3b82f6;
+            --cpu-color: #ef4444;
+            --disk-color: #eab308;
+        }
+
+        /* Reset & Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--dark-card) 0%, #1e1b4b 100%);
+            border-bottom: 1px solid var(--dark-border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: var(--success-color);
+        }
+
+        .status-indicator i {
+            font-size: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.disconnected {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .last-update {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Info Banner */
+        .info-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border: 1px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .info-banner h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-banner p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .info-banner code {
+            background: var(--dark-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            display: inline-block;
+            color: #10b981;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Health Banner */
+        .health-banner {
+            background: var(--dark-card);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--success-color);
+            transition: all 0.3s ease;
+        }
+
+        .health-banner.warning {
+            border-left-color: var(--warning-color);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .health-banner.critical {
+            border-left-color: var(--danger-color);
+            background: rgba(239, 68, 68, 0.1);
+            animation: pulse-bg 1s infinite;
+        }
+
+        @keyframes pulse-bg {
+            0%, 100% { background: rgba(239, 68, 68, 0.1); }
+            50% { background: rgba(239, 68, 68, 0.2); }
+        }
+
+        .health-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .health-status i {
+            font-size: 1.25rem;
+        }
+
+        /* Dashboard Sections */
+        .dashboard {
+            padding: 1.5rem 0;
+        }
+
+        .metrics-section {
+            background: var(--dark-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--dark-border);
+        }
+
+        .metrics-section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metrics-section h2 i {
+            color: var(--primary-color);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Metric Cards */
+        .metric-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--dark-border);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
+        }
+
+        .metric-card.network {
+            border-left: 3px solid var(--network-color);
+        }
+
+        .metric-card.system {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .metric-card.system .metric-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .metric-card.system .metric-title {
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .metric-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+        }
+
+        .metric-card.network .metric-icon {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--network-color);
+        }
+
+        .metric-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .metric-value.large {
+            font-size: 2.5rem;
+        }
+
+        .metric-unit {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .metric-bar {
+            height: 6px;
+            background: var(--dark-border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .metric-bar.large {
+            height: 10px;
+        }
+
+        .metric-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), var(--primary-color));
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .metric-bar-fill.warning {
+            background: linear-gradient(90deg, var(--warning-color), #f97316);
+        }
+
+        .metric-bar-fill.danger {
+            background: linear-gradient(90deg, var(--danger-color), #dc2626);
+        }
+
+        .metric-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .metric-badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .metric-badge.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .metric-badge.critical {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        /* Optimization Section */
+        .optimization-section {
+            background: var(--dark-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--dark-border);
+        }
+
+        .optimization-section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .optimization-section h2 i {
+            color: var(--secondary-color);
+        }
+
+        .optimization-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .optimization-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--dark-border);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .optimization-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .optimization-card.priority {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+            border-color: var(--secondary-color);
+        }
+
+        .opt-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .optimization-card.priority .opt-icon {
+            color: var(--secondary-color);
+        }
+
+        .opt-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .opt-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .opt-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .optimization-reason {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Alerts Section */
+        .alerts-section {
+            background: var(--dark-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--dark-border);
+        }
+
+        .alerts-section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alerts-section h2 i {
+            color: var(--warning-color);
+        }
+
+        .alert-count {
+            background: var(--danger-color);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            margin-left: 8px;
+        }
+
+        .alerts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .no-alerts {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 2rem;
+            color: var(--success-color);
+            font-size: 1rem;
+        }
+
+        .no-alerts i {
+            font-size: 2rem;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            background: var(--dark-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--dark-border);
+        }
+
+        .charts-section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .charts-section h2 i {
+            color: var(--success-color);
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 0.75rem;
+            border: 1px solid var(--dark-border);
+            height: 200px;
+        }
+
+        .chart-container h3 {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .footer-version {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .optimization-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid .chart-container {
+                min-height: 250px;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--dark-border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-gamepad"></i>
+                    <h1>Cloud Gaming Optimizer</h1>
+                </div>
+                <div class="header-status">
+                    <span class="status-indicator disconnected">
+                        <i class="fas fa-circle"></i>
+                        <span>Offline (GitHub Pages)</span>
+                    </span>
+                    <span class="last-update">Demo Mode</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <main class="dashboard">
+            <!-- Info Banner -->
+            <div class="info-banner">
+                <h2>⚙️ This is a Static Preview</h2>
+                <p>To use the real Cloud Gaming Optimizer with live metrics, you need to run it locally:</p>
+                <code>cd FRONTEND && python web_app.py</code>
+                <p style="margin-top: 1rem; font-size: 0.9rem;">Then visit: <code style="background: none; padding: 0;">http://localhost:5000</code></p>
+            </div>
+
+            <!-- System Health Banner -->
+            <div class="health-banner">
+                <div class="health-status">
+                    <i class="fas fa-heartbeat"></i>
+                    <span id="healthStatus">System Health: Good (Demo)</span>
+                </div>
+            </div>
+
+            <!-- Network Metrics Section -->
+            <section class="metrics-section">
+                <h2><i class="fas fa-network-wired"></i> Network Metrics (Demo Data)</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card network">
+                        <div class="metric-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Latency</span>
+                            <span class="metric-value" id="latencyValue">45.2</span>
+                            <span class="metric-unit">ms</span>
+                        </div>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" style="width: 22.6%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card network">
+                        <div class="metric-icon">
+                            <i class="fas fa-wave-square"></i>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Jitter</span>
+                            <span class="metric-value" id="jitterValue">3.8</span>
+                            <span class="metric-unit">ms</span>
+                        </div>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" style="width: 38%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card network">
+                        <div class="metric-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Packet Loss</span>
+                            <span class="metric-value" id="packetLossValue">0.1</span>
+                            <span class="metric-unit">%</span>
+                        </div>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" style="width: 0.5%"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- System Metrics Section -->
+            <section class="metrics-section">
+                <h2><i class="fas fa-desktop"></i> System Metrics (Demo Data)</h2>
+                <div class="metrics-grid">
+                    <!-- CPU -->
+                    <div class="metric-card system" id="cpuCard">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <span class="metric-title">CPU</span>
+                            <span class="metric-badge">42%</span>
+                        </div>
+                        <div class="metric-main">
+                            <span class="metric-value large">42</span>
+                            <span class="metric-unit">%</span>
+                        </div>
+                        <div class="metric-bar large">
+                            <div class="metric-bar-fill" style="width: 42%"></div>
+                        </div>
+                        <div class="metric-details">
+                            <span>Cores: 8</span>
+                            <span>Freq: 3.6 GHz</span>
+                        </div>
+                    </div>
+
+                    <!-- RAM -->
+                    <div class="metric-card system" id="ramCard">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-memory"></i>
+                            </div>
+                            <span class="metric-title">RAM</span>
+                            <span class="metric-badge">58%</span>
+                        </div>
+                        <div class="metric-main">
+                            <span class="metric-value large">58</span>
+                            <span class="metric-unit">%</span>
+                        </div>
+                        <div class="metric-bar large">
+                            <div class="metric-bar-fill warning" style="width: 58%"></div>
+                        </div>
+                        <div class="metric-details">
+                            <span>Used: 9.3 GB</span>
+                            <span>Total: 16 GB</span>
+                        </div>
+                    </div>
+
+                    <!-- GPU -->
+                    <div class="metric-card system" id="gpuCard">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-video"></i>
+                            </div>
+                            <span class="metric-title">GPU</span>
+                            <span class="metric-badge">75%</span>
+                        </div>
+                        <div class="metric-main">
+                            <span class="metric-value large">75</span>
+                            <span class="metric-unit">%</span>
+                        </div>
+                        <div class="metric-bar large">
+                            <div class="metric-bar-fill warning" style="width: 75%"></div>
+                        </div>
+                        <div class="metric-details">
+                            <span>RTX 3080</span>
+                            <span>VRAM: 82%</span>
+                        </div>
+                    </div>
+
+                    <!-- Disk -->
+                    <div class="metric-card system" id="diskCard">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-hdd"></i>
+                            </div>
+                            <span class="metric-title">Disk</span>
+                            <span class="metric-badge">51%</span>
+                        </div>
+                        <div class="metric-main">
+                            <span class="metric-value large">51</span>
+                            <span class="metric-unit">%</span>
+                        </div>
+                        <div class="metric-bar large">
+                            <div class="metric-bar-fill" style="width: 51%"></div>
+                        </div>
+                        <div class="metric-details">
+                            <span>Used: 408 GB</span>
+                            <span>Total: 800 GB</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Optimization Recommendations -->
+            <section class="optimization-section">
+                <h2><i class="fas fa-magic"></i> Optimization Recommendations</h2>
+                <div class="optimization-grid" id="optimizationPanel">
+                    <div class="optimization-card">
+                        <div class="opt-icon">
+                            <i class="fas fa-desktop"></i>
+                        </div>
+                        <div class="opt-info">
+                            <span class="opt-label">Resolution</span>
+                            <span class="opt-value">1440p</span>
+                        </div>
+                    </div>
+                    <div class="optimization-card">
+                        <div class="opt-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="opt-info">
+                            <span class="opt-label">Target FPS</span>
+                            <span class="opt-value">120 FPS</span>
+                        </div>
+                    </div>
+                    <div class="optimization-card">
+                        <div class="opt-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div class="opt-info">
+                            <span class="opt-label">Bitrate</span>
+                            <span class="opt-value">50 Mbps</span>
+                        </div>
+                    </div>
+                    <div class="optimization-card priority">
+                        <div class="opt-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="opt-info">
+                            <span class="opt-label">Priority</span>
+                            <span class="opt-value">Quality</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="optimization-reason" id="optReason">
+                    System is well balanced for high-quality gaming at optimal frame rates
+                </div>
+            </section>
+
+            <!-- Performance Charts -->
+            <section class="charts-section">
+                <h2><i class="fas fa-chart-line"></i> Performance History (Demo)</h2>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>CPU & RAM Usage</h3>
+                        <canvas id="systemChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Performance Score</h3>
+                        <canvas id="scoreChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Cloud Gaming Performance Optimizer &copy; 2024</p>
+            <p class="footer-version">Version 1.0.0 | GitHub Pages Preview</p>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize demo charts
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 300
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#94a3b8'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(51, 65, 85, 0.5)'
+                    },
+                    ticks: {
+                        color: '#64748b'
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(51, 65, 85, 0.5)'
+                    },
+                    ticks: {
+                        color: '#64748b'
+                    }
+                }
+            }
+        };
+
+        // Generate demo data
+        const demoLabels = Array.from({length: 12}, (_, i) => `${i * 5}m`);
+        const demoCpuData = [35, 38, 42, 41, 39, 42, 45, 43, 41, 40, 42, 42];
+        const demoRamData = [52, 54, 56, 58, 56, 57, 59, 58, 57, 56, 58, 58];
+        const demoScoreData = [85, 84, 82, 81, 82, 81, 79, 80, 81, 82, 81, 82];
+
+        // System Chart
+        const systemCtx = document.getElementById('systemChart').getContext('2d');
+        new Chart(systemCtx, {
+            type: 'line',
+            data: {
+                labels: demoLabels,
+                datasets: [
+                    {
+                        label: 'CPU %',
+                        data: demoCpuData,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'RAM %',
+                        data: demoRamData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: chartOptions
+        });
+
+        // Score Chart
+        const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+        new Chart(scoreCtx, {
+            type: 'line',
+            data: {
+                labels: demoLabels,
+                datasets: [{
+                    label: 'Performance Score',
+                    data: demoScoreData,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    ...chartOptions.scales,
+                    y: {
+                        ...chartOptions.scales.y,
+                        min: 0,
+                        max: 100
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
