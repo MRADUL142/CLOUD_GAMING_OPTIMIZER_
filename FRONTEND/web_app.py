@@ -11,7 +11,10 @@ from flask import Flask, render_template, jsonify, Response
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Lazy imports to avoid import-time failures
-app = Flask(__name__)
+app = Flask(__name__, 
+            template_folder=str(Path(__file__).parent / 'templates'),
+            static_folder=str(Path(__file__).parent / 'static'),
+            static_url_path='/static')
 app.config['SECRET_KEY'] = 'cloud-gaming-optimizer-secret-key'
 
 # Setup logging
