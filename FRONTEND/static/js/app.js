@@ -37,7 +37,11 @@ let scoreHistory = {
 
 // Initialize charts when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard initialized, fetching real-time metrics...');
     initializeCharts();
+    // Fetch data immediately on load
+    updateAllData();
+    // Then set up interval for continuous updates
     startRealTimeUpdates();
 });
 
@@ -193,7 +197,11 @@ async function updateAllData() {
             fetch(CONFIG.apiEndpoints.alerts).then(r => r.json())
         ]);
 
+        console.log('Fetched metrics:', metricsData);
+        
         if (metricsData.success) {
+            console.log('System CPU:', metricsData.system.cpu_percent, '%');
+            console.log('System RAM:', metricsData.system.ram_percent, '%');
             updateMetricsDisplay(metricsData);
             updateCharts(metricsData);
             updateHealthBanner(metricsData.system_health);
