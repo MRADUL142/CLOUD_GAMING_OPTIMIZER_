@@ -7,8 +7,22 @@ from pathlib import Path
 from datetime import datetime
 from flask import Flask, render_template, jsonify, Response
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+# Add backend src to path - handles both local and deployed environments
+# We need to add the BACKEND/src directory to sys.path
+import os
+current_file = Path(__file__).resolve()  # /path/to/FRONTEND/web_app.py
+current_dir = current_file.parent  # /path/to/FRONTEND
+parent_dir = current_dir.parent  # /path/to/
+backend_src = parent_dir / "BACKEND" / "src"
+
+if backend_src.exists():
+    sys.path.insert(0, str(backend_src))
+else:
+    # Try alternative: Maybe we're deployed and working from root
+    cwd_parent = Path.cwd().parent
+    alt_backend_src = cwd_parent / "BACKEND" / "src"
+    if alt_backend_src.exists():
+        sys.path.insert(0, str(alt_backend_src))
 
 # Lazy imports to avoid import-time failures
 app = Flask(__name__, 
@@ -46,12 +60,12 @@ def get_components():
     
     if _network_collector is None:
         try:
-            from src.data_collection.network_metrics import NetworkMetricsCollector
-            from src.data_collection.system_metrics import SystemMetricsCollector
-            from src.optimization_engine.optimizer import GamingOptimizer
-            from src.optimization_engine.optimization_rules import OptimizationRules
-            from src.monitoring.performance_monitor import PerformanceMonitor
-            from src.monitoring.alert_system import AlertSystem
+            from data_collection.network_metrics import NetworkMetricsCollector
+            from data_collection.system_metrics import SystemMetricsCollector
+            from optimization_engine.optimizer import GamingOptimizer
+            from optimization_engine.optimization_rules import OptimizationRules
+            from monitoring.performance_monitor import PerformanceMonitor
+            from monitoring.alert_system import AlertSystem
             
             _network_collector = NetworkMetricsCollector()
             _system_collector = SystemMetricsCollector()
