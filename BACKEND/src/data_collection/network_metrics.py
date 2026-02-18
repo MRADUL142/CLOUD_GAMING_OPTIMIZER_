@@ -2,7 +2,7 @@
 
 import json
 import logging
-import subprocess
+import socket
 import platform
 from datetime import datetime
 from typing import Dict, Any, Optional
@@ -79,42 +79,39 @@ class NetworkMetricsCollector:
             return self._get_mock_all_metrics()
     
     def _get_latency(self) -> float:
-        """Get network latency in milliseconds."""
+        """Get network latency in milliseconds using socket connection."""
         try:
-            # Try to ping a reliable server (Google DNS)
+            # Try to connect to Google Public DNS (port 53 is usually open)
+            # We'll measure time to connect to 8.8.8.8:53 (Google DNS)
             host = "8.8.8.8"
+            port = 53
             
-            if platform.system().lower() == "windows":
-                result = subprocess.run(
-                    ["ping", "-n", "1", "-w", "2000", host],
-                    capture_output=True,
-                    timeout=5
-                )
-                if result.returncode == 0:
-                    # Parse ping output for latency
-                    output = result.stdout.decode()
-                    if "time=" in output:
-                        try:
-                            time_str = output.split("time=")[1].split("ms")[0].strip()
-                            return float(time_str)
-                        except (IndexError, ValueError):
-                            pass
-            else:
-                result = subprocess.run(
-                    ["ping", "-c", "1", "-W", "2000", host],
-                    capture_output=True,
-                    timeout=5
-                )
-                if result.returncode == 0:
-                    output = result.stdout.decode()
-                    if "time=" in output:
-                        try:
-                            time_str = output.split("time=")[1].split(" ")[0].strip()
-                            return float(time_str)
-                        except (IndexError, ValueError):
-                            pass
+            start_time = time.time()
+            
+            # Create socket and attempt connection
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(3)  # 3 second timeout
+            
+            try:
+                sock.connect((host, port))
+                elapsed = (time.time() - start_time) * 1000  # Convert to milliseconds
+                sock.close()
+                return round(elapsed, 1)
+            except (socket.timeout, socket.error, OSError):
+                sock.close()
+                raise
+                
         except Exception as e:
-            logger.warning(f"Could not measure latency: {e}")
+            logger.warning(f"Could not measure latency via socket: {e}")
+        
+        # Fallback: try DNS lookup as a latency measure
+        try:
+            start_time = time.time()
+            socket.gethostbyname("8.8.8.8")
+            elapsed = (time.time() - start_time) * 1000
+            return round(elapsed, 1) if elapsed > 0.5 else 25.0
+        except Exception as e:
+            logger.warning(f"Could not measure latency via DNS: {e}")
         
         return 25.0  # Default fallback
     
