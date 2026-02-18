@@ -286,9 +286,24 @@ def health_check():
     })
 
 
-def run_server(host='127.0.0.1', port=5000, debug=True):
-    """Run the Flask server."""
+def run_server(host=None, port=None, debug=None):
+    """Run the Flask server.
+    
+    Supports environment variables for cloud deployment:
+    - HOST: Server host (default: 0.0.0.0 for cloud, 127.0.0.1 for local)
+    - PORT: Server port (default: 5000)
+    - FLASK_ENV: Flask environment (production/development)
+    """
+    import os
+    
+    # Get from environment or use defaults
+    host = host or os.environ.get('HOST', '0.0.0.0')
+    port = port or int(os.environ.get('PORT', 5000))
+    flask_env = os.environ.get('FLASK_ENV', 'development')
+    debug = debug if debug is not None else (flask_env != 'production')
+    
     logger.info(f"Starting Cloud Gaming Optimizer Web Dashboard on {host}:{port}")
+    logger.info(f"Environment: {flask_env}")
     app.run(host=host, port=port, debug=debug)
 
 
