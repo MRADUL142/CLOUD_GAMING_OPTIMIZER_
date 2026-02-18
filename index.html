@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Gaming Optimizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f1f5f9;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            text-align: center;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid #334155;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+        }
+        
+        .description {
+            background: rgba(51, 65, 85, 0.5);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        
+        .description h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #06b6d4;
+        }
+        
+        .description ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .description li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .description li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .setup-section {
+            background: rgba(51, 65, 85, 0.5);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        
+        .setup-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #f59e0b;
+        }
+        
+        .setup-section pre {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            color: #10b981;
+            border-left: 3px solid #6366f1;
+        }
+        
+        .setup-section code {
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: 2px solid;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-color: #6366f1;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border-color: #334155;
+            color: #94a3b8;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+        
+        .footer {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #334155;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .logo {
+                font-size: 3rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🎮</div>
+        <h1>Cloud Gaming Optimizer</h1>
+        <p class="subtitle">Real-time Performance Monitoring & Optimization</p>
+        
+        <div class="description">
+            <h2>Features</h2>
+            <ul>
+                <li>Real-time network metrics (latency, jitter, packet loss)</li>
+                <li>System performance monitoring (CPU, RAM, GPU, Disk)</li>
+                <li>Intelligent optimization recommendations</li>
+                <li>Performance alerts and health status</li>
+                <li>Interactive performance history charts</li>
+                <li>Cloud gaming quality optimization</li>
+            </ul>
+        </div>
+        
+        <div class="setup-section">
+            <h3>🚀 Quick Start</h3>
+            <p style="margin-bottom: 1rem;">Run the Flask web dashboard:</p>
+            <pre><code># Navigate to FRONTEND directory
+cd FRONTEND
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the web server
+python web_app.py
+
+# Open in browser
+# http://localhost:5000</code></pre>
+        </div>
+        
+        <div class="setup-section">
+            <h3>📚 Documentation</h3>
+            <p>For more information, see the project README and SETUP documentation in the repository root.</p>
+        </div>
+        
+        <div class="button-group">
+            <a href="https://github.com/MRADUL142/CLOUD_GAMING_OPTIMIZER_" class="btn btn-primary">View on GitHub</a>
+            <a href="./FRONTEND/templates/index.html" class="btn btn-secondary">Dashboard (Local Only)</a>
+        </div>
+        
+        <div class="footer">
+            <p>Cloud Gaming Performance Optimizer v1.0.0</p>
+            <p>This is a local web application. For full functionality, run it with Python & Flask.</p>
+        </div>
+    </div>
+</body>
+</html>
