@@ -55,12 +55,44 @@ def add_client_hints(response: Response):
     provide higher-entropy values on supported browsers.
     """
     try:
-        # Request platform, model, and architecture hints
-        response.headers['Accept-CH'] = 'Sec-CH-UA, Sec-CH-UA-Platform, Sec-CH-UA-Model, Sec-CH-UA-Arch'
+        # Request platform, model, architecture and mobile hints
+        response.headers['Accept-CH'] = 'Sec-CH-UA, Sec-CH-UA-Platform, Sec-CH-UA-Model, Sec-CH-UA-Arch, Sec-CH-UA-Mobile'
         response.headers['Accept-CH-Lifetime'] = '86400'
     except Exception:
         pass
     return response
+
+
+@app.route('/api/client_hints')
+def get_client_hints():
+    """Return parsed UA Client Hints and related headers sent by the browser.
+
+    Browsers will only send these headers if they received an `Accept-CH` header
+    previously and over HTTPS. This endpoint helps the frontend augment device
+    detection with server-observed hints.
+    """
+    from flask import request
+
+    hints = {
+        'sec_ch_ua': request.headers.get('Sec-CH-UA'),
+        'sec_ch_ua_platform': request.headers.get('Sec-CH-UA-Platform'),
+        'sec_ch_ua_model': request.headers.get('Sec-CH-UA-Model'),
+        'sec_ch_ua_arch': request.headers.get('Sec-CH-UA-Arch'),
+        'sec_ch_ua_mobile': request.headers.get('Sec-CH-UA-Mobile'),
+        'user_agent': request.headers.get('User-Agent')
+    }
+
+    # Normalize simple values
+    # Sec-CH-UA values often come quoted; strip surrounding quotes if present
+    def _clean(v):
+        if not v:
+            return None
+        return v.strip().strip('"')
+
+    for k in list(hints.keys()):
+        hints[k] = _clean(hints[k])
+
+    return jsonify({'success': True, 'hints': hints, 'timestamp': datetime.now().isoformat()})
 
 # Global components (initialized on first request)
 _network_collector = None

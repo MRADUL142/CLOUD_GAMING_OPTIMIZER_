@@ -519,17 +519,79 @@ function detectDevice() {
     const deviceType = isMobileUA ? 'Mobile' : 'Desktop';
 
     // Try to get higher-entropy details when supported
+    // First, use client-side heuristics
+    const clientSideName = parseDeviceFromUA(ua) || (navigator.userAgentData && navigator.userAgentData.brands && navigator.userAgentData.brands[0] && navigator.userAgentData.brands[0].brand) || platform;
+
     if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
         navigator.userAgentData.getHighEntropyValues(['model', 'platform', 'architecture']).then(info => {
-            const name = info.model || (navigator.userAgentData.brands && navigator.userAgentData.brands[0] && navigator.userAgentData.brands[0].brand) || platform;
+            const name = info.model || clientSideName;
             displayDeviceInfo({ ua, platform: info.platform || platform, cores, memory, resolution, type: deviceType, name });
+            // After displaying client-side info, fetch server-side hints and merge
+            fetchAndMergeServerHints();
         }).catch(() => {
-            const name = parseDeviceFromUA(ua) || platform;
-            displayDeviceInfo({ ua, platform, cores, memory, resolution, type: deviceType, name });
+            displayDeviceInfo({ ua, platform, cores, memory, resolution, type: deviceType, name: clientSideName });
+            fetchAndMergeServerHints();
         });
     } else {
-        const name = parseDeviceFromUA(ua) || platform;
-        displayDeviceInfo({ ua, platform, cores, memory, resolution, type: deviceType, name });
+        displayDeviceInfo({ ua, platform, cores, memory, resolution, type: deviceType, name: clientSideName });
+        fetchAndMergeServerHints();
+    }
+}
+
+// Fetch server-observed client hints and merge into UI when available
+function fetchAndMergeServerHints() {
+    fetch('/api/client_hints').then(r => r.json()).then(payload => {
+        if (!payload || !payload.success) return;
+        const hints = payload.hints || {};
+
+        // Prefer server-provided model/platform when present
+        const serverModel = hints.sec_ch_ua_model || null;
+        const serverPlatform = hints.sec_ch_ua_platform || null;
+
+        const currentName = document.getElementById('deviceName').textContent;
+        const nameToShow = serverModel || currentName;
+        if (nameToShow) document.getElementById('deviceName').textContent = nameToShow;
+
+        if (serverPlatform) document.getElementById('devicePlatform').textContent = serverPlatform;
+
+        // If detection still seems insufficient, show fallback prompt
+        const isUnknown = !nameToShow || nameToShow === 'Unknown' || nameToShow === '--';
+        handleFallbackPrompt(isUnknown);
+    }).catch(() => {
+        // If server call fails, still allow fallback prompt based on client detection
+        const name = document.getElementById('deviceName').textContent;
+        const isUnknown = !name || name === 'Unknown' || name === '--';
+        handleFallbackPrompt(isUnknown);
+    });
+}
+
+function handleFallbackPrompt(show) {
+    const stored = localStorage.getItem('reportedDevice');
+    const prompt = document.getElementById('deviceFallbackPrompt');
+    if (stored) {
+        // If user provided a device earlier, use it
+        document.getElementById('deviceName').textContent = stored;
+        if (prompt) prompt.style.display = 'none';
+        return;
+    }
+
+    if (show && prompt) {
+        prompt.style.display = 'flex';
+        const input = document.getElementById('deviceManualInput');
+        const save = document.getElementById('deviceManualSave');
+        const dismiss = document.getElementById('deviceManualDismiss');
+
+        if (save && input) save.onclick = () => {
+            const v = input.value.trim();
+            if (!v) return;
+            localStorage.setItem('reportedDevice', v);
+            document.getElementById('deviceName').textContent = v;
+            prompt.style.display = 'none';
+        };
+
+        if (dismiss) dismiss.onclick = () => { prompt.style.display = 'none'; };
+    } else if (prompt) {
+        prompt.style.display = 'none';
     }
 }
 
