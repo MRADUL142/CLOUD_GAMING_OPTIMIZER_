@@ -45,6 +45,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+@app.after_request
+def add_client_hints(response: Response):
+    """Add Accept-CH response header to request additional client hints.
+
+    Note: Browsers will only send UA Client Hints when they respect this header
+    and the site is served over HTTPS. This helps `navigator.userAgentData`
+    provide higher-entropy values on supported browsers.
+    """
+    try:
+        # Request platform, model, and architecture hints
+        response.headers['Accept-CH'] = 'Sec-CH-UA, Sec-CH-UA-Platform, Sec-CH-UA-Model, Sec-CH-UA-Arch'
+        response.headers['Accept-CH-Lifetime'] = '86400'
+    except Exception:
+        pass
+    return response
+
 # Global components (initialized on first request)
 _network_collector = None
 _system_collector = None

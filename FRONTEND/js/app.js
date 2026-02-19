@@ -38,6 +38,7 @@ let scoreHistory = {
 // Initialize charts when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     initializeCharts();
+    detectDevice();
     startRealTimeUpdates();
 });
 
@@ -502,4 +503,65 @@ function setConnectionStatus(connected) {
         status.classList.add('disconnected');
         status.querySelector('span:last-child').textContent = 'Disconnected';
     }
+}
+
+/**
+ * Detect client device information using available browser APIs
+ * Note: Browsers limit exact hardware/vendor exposure for privacy.
+ */
+function detectDevice() {
+    const ua = navigator.userAgent || '';
+    const platform = navigator.platform || (navigator.userAgentData && navigator.userAgentData.platform) || 'Unknown';
+    const cores = navigator.hardwareConcurrency || 'Unknown';
+    const memory = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Unknown';
+    const resolution = (screen && screen.width) ? `${screen.width} x ${screen.height}` : 'Unknown';
+    const isMobileUA = /Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (navigator.userAgentData && navigator.userAgentData.mobile);
+    const deviceType = isMobileUA ? 'Mobile' : 'Desktop';
+
+    // Try to get higher-entropy details when supported
+    if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+        navigator.userAgentData.getHighEntropyValues(['model', 'platform', 'architecture']).then(info => {
+            const name = info.model || (navigator.userAgentData.brands && navigator.userAgentData.brands[0] && navigator.userAgentData.brands[0].brand) || platform;
+            displayDeviceInfo({ ua, platform: info.platform || platform, cores, memory, resolution, type: deviceType, name });
+        }).catch(() => {
+            const name = parseDeviceFromUA(ua) || platform;
+            displayDeviceInfo({ ua, platform, cores, memory, resolution, type: deviceType, name });
+        });
+    } else {
+        const name = parseDeviceFromUA(ua) || platform;
+        displayDeviceInfo({ ua, platform, cores, memory, resolution, type: deviceType, name });
+    }
+}
+
+function parseDeviceFromUA(ua) {
+    // Android often includes the model in parentheses: "(Linux; Android 11; SM-G991B)"
+    const androidMatch = ua.match(/Android[^;]*;\s*([^;\)]+)\)/i);
+    if (androidMatch && androidMatch[1]) return androidMatch[1].trim();
+
+    // iPhone/iPad
+    if (/iPad|iPhone|iPod/.test(ua)) {
+        const m = ua.match(/iPhone|iPad|iPod/);
+        return m ? m[0] : null;
+    }
+
+    // Desktops and laptops rarely expose vendor/model in UA; return null to fall back to platform
+    return null;
+}
+
+function displayDeviceInfo(info) {
+    const nameEl = document.getElementById('deviceName');
+    const platformEl = document.getElementById('devicePlatform');
+    const uaEl = document.getElementById('deviceUA');
+    const coresEl = document.getElementById('deviceCores');
+    const memoryEl = document.getElementById('deviceMemory');
+    const resEl = document.getElementById('deviceResolution');
+    const typeEl = document.getElementById('deviceType');
+
+    if (nameEl) nameEl.textContent = info.name || '--';
+    if (platformEl) platformEl.textContent = info.platform || '--';
+    if (uaEl) uaEl.textContent = info.ua || '--';
+    if (coresEl) coresEl.textContent = info.cores || '--';
+    if (memoryEl) memoryEl.textContent = info.memory || '--';
+    if (resEl) resEl.textContent = info.resolution || '--';
+    if (typeEl) typeEl.textContent = info.type || '--';
 }
